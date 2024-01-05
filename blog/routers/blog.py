@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from .. import schemas, database, models
+from .. import schemas, database, models, oauth2
 from ..repository import blogRepository
 
 # Cria uma instância de APIRouter para organizar as rotas relacionadas a blogs
@@ -15,22 +15,22 @@ get_db = database.get_db
 
 # Rota para obter todos os blogs
 @router.get('/', response_model=List[schemas.ShowBlog])
-def all(db: Session = Depends(get_db)):
+def all(db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
     return blogRepository.get_all(db)
 
 # Rota para criar um novo blog
 @router.post('/', status_code=status.HTTP_201_CREATED)
-def create(request: schemas.Blog, db: Session = Depends(get_db)):
+def create(request: schemas.Blog, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
     return blogRepository.create(request, db)
 
 # Rota para excluir um blog com um ID específico
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def destroy(id: int, db: Session = Depends(get_db)):
+def destroy(id: int, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
     return blogRepository.destroy(id, db)
 
 # Rota para atualizar um blog com um ID específico
 @router.put('/{id}', status_code=status.HTTP_202_ACCEPTED)
-def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
+def update(id: int, request: schemas.Blog, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
     # Para fins de facilitar o entendimento, usaremos o metodo Put, pois engloba todas as caracteristicas utilizadas nos outros
     """
     Parâmetros:
@@ -42,5 +42,5 @@ def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
 
 # Rota para obter um blog específico com um ID específico
 @router.get('/{id}', status_code=status.HTTP_200_OK, response_model=schemas.ShowBlog)
-def show(id: int, db: Session = Depends(get_db)):
+def show(id: int, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
     return blogRepository.show(id, db)
